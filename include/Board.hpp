@@ -4,16 +4,17 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <vector>
+#include "../include/Tetromino.hpp"
 
 class Board {
 public:
     Board(int width, int height, int cellSize);
     void draw(sf::RenderWindow &window);
     
-    // Future methods
-    //bool isCellOccupied(int row, int col) const;
-    //void setCell(int row, int col, int value);
-    //void clearLines();
+    bool isValidPosition(const Tetromino &tetromino, int offsetX, int offsetY) const;
+    void placeTetromino(const Tetromino &tetromino);
+    
+    void clearLines();
 
 private: 
     int mWidth;         // Number of columns

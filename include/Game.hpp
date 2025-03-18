@@ -18,6 +18,8 @@ private:
     sf::RenderWindow mWindow;
     Board mBoard;           // The tetris board
     Tetromino mTetromino;   // Current Tetromino
+
+    float mFallTimer;
 };
 
 #endif // GAME_HPP

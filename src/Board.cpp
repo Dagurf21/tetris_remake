@@ -17,11 +17,74 @@ void Board::draw(sf::RenderWindow &window) {
     for (int row = 0; row < mHeight; row++) {
         for (int col = 0; col < mWidth; col++) {
             cellShape.setPosition(col * mCellSize, row * mCellSize);
-            // For now all cells are empty
-            cellShape.setFillColor(sf::Color::Black);
+            if (mGrid[row][col] == 0) {
+                cellShape.setFillColor(sf::Color::Black); 
+            } else {
+                cellShape.setFillColor(sf::Color::White); // or another visible color
+            }
             cellShape.setOutlineThickness(1);
             cellShape.setOutlineColor(sf::Color(128, 128, 128));
             window.draw(cellShape);
+        }
+    }
+}
+
+bool Board::isValidPosition(const Tetromino &tetromino, int offsetX, int offsetY) const {
+    const auto &shape = tetromino.getShape();
+    sf::Vector2i pos = tetromino.getPosition();
+
+    // Check each cell of the tetromino
+    for (size_t row = 0; row < shape.size(); row++) {
+        for (size_t col = 0; col < shape[row].size(); col++) {
+            if (shape[row][col]) {
+                int newX = pos.x + col + offsetX;
+                int newY = pos.y + row + offsetY;
+
+                // Check if tetromino is outside boundries
+                if (newX < 0 || newX >= mWidth || newY < 0 || newY >= mHeight)
+                    return false;
+
+                if (mGrid[newY][newX] != 0)
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
+void Board::placeTetromino(const Tetromino &tetromino) {
+    const auto &shape = tetromino.getShape();
+    sf::Vector2i pos = tetromino.getPosition();
+    for (size_t row = 0; row < shape.size(); row++) {
+        for (size_t col = 0; col < shape[row].size(); col++){
+            if (shape[row][col]) {
+                int gridX = pos.x + col;
+                int gridY = pos.y + row;
+                if (gridX >= 0 && gridX < mWidth && gridY >= 0 && gridY < mHeight) {
+                    mGrid[gridY][gridX] = 1; // Mark the cell as occupied
+                }
+            }
+        }
+    }
+}
+
+void Board::clearLines() {
+    for (int row = 0; row < mHeight; row++) {
+        bool isFull = true;
+        for (int col = 0; col < mWidth; col++) {
+            if (mGrid[row][col] == 0){
+                isFull = false;
+                break;
+            }
+        }
+
+        // If the row is full, shift everything above it down
+        if (isFull) {
+            for (int r = row; r > 0; r--) {
+                mGrid[r] = mGrid[r - 1];
+            }
+            mGrid[0] = std::vector<int>(mWidth, 0);
+            row--;
         }
     }
 }
