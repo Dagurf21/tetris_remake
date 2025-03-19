@@ -73,7 +73,7 @@ void Tetromino::intializeShape() {
 }
 
 
-void Tetromino::draw(sf::RenderWindow &window) {
+void Tetromino::draw(sf::RenderWindow &window, int offsetX, int offsetY) {
     // Draw each filled cell of the tetromino 
     for(size_t row = 0; row < mShape.size(); ++row){
         for (size_t col = 0; col < mShape[row].size(); ++col) {
@@ -81,7 +81,10 @@ void Tetromino::draw(sf::RenderWindow &window) {
                 sf::RectangleShape cell(sf::Vector2f(mCellSize - 1, mCellSize - 1));
                 // Choose color based on type
                 cell.setFillColor(mType == TetrominoType::I ? sf::Color::Cyan : sf::Color::White);
-                cell.setPosition((mPosition.x + col) * mCellSize, (mPosition.y + row) * mCellSize);
+                cell.setPosition(
+                        offsetX + (mPosition.x + col) * mCellSize, 
+                        offsetY + (mPosition.y + row) * mCellSize
+                );
                 window.draw(cell);
             }
         }

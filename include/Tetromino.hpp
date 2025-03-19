@@ -14,7 +14,7 @@ public:
     Tetromino(TetrominoType type, int cellSize);
 
     // Draw the tetromino on the given window
-    void draw(sf::RenderWindow &window);
+    void draw(sf::RenderWindow &window, int offsetX, int offsetY);
 
     // Rotate the tetromino clockwise
     void rotate();

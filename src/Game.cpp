@@ -1,16 +1,47 @@
 #include "../include/Game.hpp"
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <random>
 #include <SFML/Window/Keyboard.hpp>
 #include <iostream>
 
+
+#include <filesystem>
+#include <string>
+
+int offsetX = 800;
+int offsetY = 220;
+
 Game::Game()
-: mWindow(sf::VideoMode(320, 640), "Tetris SFML"),
-    mBoard(10, 20, 32),                 // 10 cols, 20 rows, 32x32 pixels
+: mWindow(sf::VideoMode(1920, 1080), "Tetris SFML"),
+    mBoard(10, 20, 32, *this),          // 10 cols, 20 rows, 32x32 pixels
     mTetromino(TetrominoType::I, 32),   // Start with an I-piece
-    mFallTimer(0)
+    mFallTimer(0),
+    mScore(0),                          // Initial score is 0
+    mLevel(1),
+    mFallDelay(1.0f)
 {
     // Set the starting pos for the tetromino 
     mTetromino.setPosition(3, 0);
+
+    // Load a font
+    if (!mFont.loadFromFile("assets/0xProtoNerdFont-Bold.ttf")){
+        std::cerr << "Error loading font!" << "\n";
+    }
+    // score text
+    mScoreText.setFont(mFont);
+    mScoreText.setString("Score: 0");
+    mScoreText.setCharacterSize(24);
+    mScoreText.setFillColor(sf::Color::White);
+    mScoreText.setPosition(offsetX + 340, offsetY + 20);
+
+    // Set up the level text
+    mLevelText.setFont(mFont);
+    mLevelText.setString("Level: 1");
+    mLevelText.setCharacterSize(24);
+    mLevelText.setFillColor(sf::Color::White);
+    mLevelText.setPosition(offsetX + 340, offsetY + 50);
 }
 
 void Game::run() {
@@ -113,13 +144,18 @@ void Game::processEvents() {
                 // Lock the tetromino into board
                 mBoard.placeTetromino(mTetromino);
                 // Clear completed lines if any
-                mBoard.clearLines();
+                int cleared = mBoard.clearLines();
+                if (cleared > 0) {
+                    mScore += 100 * cleared;
+                    mScoreText.setString("Score: " + std::to_string(mScore));
+                }
+
                 // Spawn new tetromino (TODO: now always I-piece);
                 TetrominoType randomType = getRandomTetrominoType();
                 mTetromino = Tetromino(randomType, 32);
                 mTetromino.setPosition(3, 0);
 
-            // Check for GameOver: if the new piece is invalid right away 
+                // Check for GameOver: if the new piece is invalid right away 
                 if (!mBoard.isValidPosition(mTetromino, 0, 0)){
                     // TODO: Game over menu
                 }
@@ -146,7 +182,13 @@ void Game::update(sf::Time deltaTime) {
             mBoard.placeTetromino(mTetromino);
             
             // clear any completed lines
-            mBoard.clearLines();
+            int cleared = mBoard.clearLines();
+            if (cleared > 0) {
+                // TODO: Implement level inceremtns and update the score
+                std::cout << "Line cleared " << cleared << ", new score: " << mScore << std::endl;
+                mScore += 100 * cleared;
+                mScoreText.setString("Score: " + std::to_string(mScore));
+            }
 
             // spawn new tetromino : TODO: for now always an I-piece
             TetrominoType randomType = getRandomTetrominoType();
@@ -163,10 +205,34 @@ void Game::update(sf::Time deltaTime) {
 }
 
 void Game::render() {
-    mWindow.clear();
-    // draw the board 
-    mBoard.draw(mWindow);
+    mWindow.clear(sf::Color(30, 30, 30));
+    // draw the board area background
+    sf::RectangleShape boardBackground(sf::Vector2f(320, 640)); // Board is 10*32 by 20*32 pixels
+    boardBackground.setFillColor(sf::Color(50, 50, 50));
+    boardBackground.setPosition(offsetX, offsetY);
+    mWindow.draw(boardBackground);
+
+    // Draw a white border around the board
+    sf::RectangleShape boardBorder(sf::Vector2f(320, 640));
+    boardBorder.setFillColor(sf::Color::Transparent);
+    boardBorder.setOutlineThickness(3);
+    boardBorder.setOutlineColor(sf::Color::White);
+    boardBorder.setPosition(offsetX, offsetY);
+    mWindow.draw(boardBorder);
+    
+    // Draw the game board 
+    mBoard.draw(mWindow, offsetX, offsetY);
+
     // Draw the tetromino
-    mTetromino.draw(mWindow);
+    mTetromino.draw(mWindow, offsetX, offsetY);
+    
+    // Draw the UI sidebar (just the score text)
+    mWindow.draw(mScoreText);
+
+    // Display everything
     mWindow.display();
+}
+
+void Game::adjustFallSpeed() {
+    mFallDelay = std::max(0.1f, 1.0f - (mLevel * 0.1f));
 }
