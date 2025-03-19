@@ -3,6 +3,8 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <cstddef>
+#include <cstdlib>
+#include <random>
 
 Tetromino::Tetromino(TetrominoType type, int cellSize)
 : mType(type), mCellSize(cellSize), mPosition(0, 0)
@@ -69,6 +71,7 @@ void Tetromino::intializeShape() {
         };
     }
 }
+
 
 void Tetromino::draw(sf::RenderWindow &window) {
     // Draw each filled cell of the tetromino 

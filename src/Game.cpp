@@ -1,4 +1,5 @@
 #include "../include/Game.hpp"
+#include <random>
 #include <SFML/Window/Keyboard.hpp>
 #include <iostream>
 
@@ -20,6 +21,15 @@ void Game::run() {
         update(deltaTime);
         render();
     }
+}
+
+TetrominoType getRandomTetrominoType() {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    // There are 8 tetromino types
+    std::uniform_int_distribution<> distrib(0, 6);
+    int randomIndex = distrib(gen);
+    return static_cast<TetrominoType>(randomIndex);
 }
 
 void Game::processEvents() {
@@ -92,6 +102,29 @@ void Game::processEvents() {
                     mTetromino.setPosition(pos.x, pos.y + 1);
                 }
             }
+
+            // Hard Drop using Space Bar 
+            else if (event.key.code == sf::Keyboard::Space) {
+                // loop until tetromino cannot move any more down
+                while (mBoard.isValidPosition(mTetromino, 0, 1)) {
+                    auto pos = mTetromino.getPosition();
+                    mTetromino.setPosition(pos.x, pos.y + 1);
+                }
+                // Lock the tetromino into board
+                mBoard.placeTetromino(mTetromino);
+                // Clear completed lines if any
+                mBoard.clearLines();
+                // Spawn new tetromino (TODO: now always I-piece);
+                TetrominoType randomType = getRandomTetrominoType();
+                mTetromino = Tetromino(randomType, 32);
+                mTetromino.setPosition(3, 0);
+
+            // Check for GameOver: if the new piece is invalid right away 
+                if (!mBoard.isValidPosition(mTetromino, 0, 0)){
+                    // TODO: Game over menu
+                }
+            }
+            mFallTimer = 0;
         }
     }
 }
@@ -116,7 +149,8 @@ void Game::update(sf::Time deltaTime) {
             mBoard.clearLines();
 
             // spawn new tetromino : TODO: for now always an I-piece
-            mTetromino = Tetromino(TetrominoType::I, 32);
+            TetrominoType randomType = getRandomTetrominoType();
+            mTetromino = Tetromino(randomType, 32);
             mTetromino.setPosition(3, 0);
 
             // Check for GameOver: if the new piece is invalid right away 
