@@ -20,8 +20,41 @@ Game::Game()
     mFallTimer(0),
     mScore(0),                          // Initial score is 0
     mLevel(1),
-    mFallDelay(1.0f)
+    mFallDelay(1.0f),
+    mTotalLinesCleared(0),
+    mCurrentState(GameState::MENU)
 {
+    if (!bufferClearLine1.loadFromFile("assets/Music/clear_line_1.wav")) {
+        std::cerr << "Error loading clear_line_1.wav\n";
+    }
+    soundClearLine1.setBuffer(bufferClearLine1);
+
+    if (!bufferClearLine2.loadFromFile("assets/Music/clear_line_2.wav")) {
+        std::cerr << "Error loading clear_line_2.wav\n";
+    }
+    soundClearLine2.setBuffer(bufferClearLine2);
+
+    if (!bufferPlaceTetromino1.loadFromFile("assets/Music/place_tetromino_1.wav")) {
+        std::cerr << "Error loading place_tetromino_1.wav\n";
+    }
+    soundPlaceTetromino1.setBuffer(bufferPlaceTetromino1);
+
+    if (!bufferPlaceTetromino2.loadFromFile("assets/Music/place_tetromino_2.wav")) {
+        std::cerr << "Error loading place_tetromino_2.wav\n";
+    }
+    soundPlaceTetromino2.setBuffer(bufferPlaceTetromino2);
+
+    if (!bufferPlaceTetromino3.loadFromFile("assets/Music/place_tetromino_3.wav")) {
+        std::cerr << "Error loading place_tetromino_3.wav\n";
+    }
+    soundPlaceTetromino3.setBuffer(bufferPlaceTetromino3);
+
+    if (!backgroundMusic.openFromFile("assets/Music/background_music.wav")) {
+        std::cerr << "Error loading background_music.wav\n";
+    }
+    backgroundMusic.setLoop(true);  // Make it loop indefinitely
+    backgroundMusic.play(); 
+
     // Set the starting pos for the tetromino 
     mTetromino.setPosition(3, 0);
 
@@ -42,15 +75,26 @@ Game::Game()
     mLevelText.setCharacterSize(24);
     mLevelText.setFillColor(sf::Color::White);
     mLevelText.setPosition(offsetX + 340, offsetY + 50);
+
+    mMenu = new Menu(mFont, mWindow.getSize());
 }
 
 void Game::run() {
     sf::Clock clock;
     while (mWindow.isOpen()) {
         sf::Time deltaTime = clock.restart();
-        processEvents();
-        update(deltaTime);
-        render();
+
+        if (mCurrentState == GameState::MENU) {
+            processMenuEvents();
+            renderMenu();
+        } else if (mCurrentState == GameState::PLAYING) {
+            processEvents();
+            update(deltaTime);
+            render();
+        } else if (mCurrentState == GameState::GAMEOVER) {
+            processGameOverEvents();
+            renderGameOver();
+        }
     }
 }
 
@@ -145,9 +189,15 @@ void Game::processEvents() {
                 mBoard.placeTetromino(mTetromino);
                 // Clear completed lines if any
                 int cleared = mBoard.clearLines();
+
                 if (cleared > 0) {
-                    mScore += 100 * cleared;
+                    int calculatedScore = calculateScore(cleared);
+                    mScore += calculatedScore;
+                    mTotalLinesCleared += cleared;
+                    mLevel = (mTotalLinesCleared / 10) + 1;
                     mScoreText.setString("Score: " + std::to_string(mScore));
+                    mLevelText.setString("Level: " + std::to_string(mLevel));
+                    adjustFallSpeed();
                 }
 
                 // Spawn new tetromino (TODO: now always I-piece);
@@ -160,7 +210,6 @@ void Game::processEvents() {
                     // TODO: Game over menu
                 }
             }
-            mFallTimer = 0;
         }
     }
 }
@@ -184,10 +233,16 @@ void Game::update(sf::Time deltaTime) {
             // clear any completed lines
             int cleared = mBoard.clearLines();
             if (cleared > 0) {
-                // TODO: Implement level inceremtns and update the score
-                std::cout << "Line cleared " << cleared << ", new score: " << mScore << std::endl;
-                mScore += 100 * cleared;
+                int calculatedScore = calculateScore(cleared);
+                mScore += calculatedScore;
+                
+                mTotalLinesCleared += cleared;
+
+                mLevel = (mTotalLinesCleared / 10) + 1;
+
+                mLevelText.setString("Level: " + std::to_string(mLevel));
                 mScoreText.setString("Score: " + std::to_string(mScore));
+                adjustFallSpeed();
             }
 
             // spawn new tetromino : TODO: for now always an I-piece
@@ -197,13 +252,18 @@ void Game::update(sf::Time deltaTime) {
 
             // Check for GameOver: if the new piece is invalid right away 
             if (!mBoard.isValidPosition(mTetromino, 0, 0)){
-                // TODO: Game over menu
+                
+                // In Game::update() or in the event branch that spawns a new tetromino:
+                if (!mBoard.isValidPosition(mTetromino, 0, 0)) {
+                    mCurrentState = GameState::GAMEOVER;
+                    // Optionally: you might want to stop further updates or lock input.
+                }
             }
         }
         mFallTimer = 0;
     }
 }
-
+ 
 void Game::render() {
     mWindow.clear(sf::Color(30, 30, 30));
     // draw the board area background
@@ -228,11 +288,121 @@ void Game::render() {
     
     // Draw the UI sidebar (just the score text)
     mWindow.draw(mScoreText);
+    mWindow.draw(mLevelText);
 
     // Display everything
     mWindow.display();
 }
 
+int Game::calculateScore(int linesCleared) {
+    switch (linesCleared) {
+        case 1: return 40   * (mLevel + 1); break;
+        case 2: return 100  * (mLevel + 1); break;
+        case 3: return 300  * (mLevel + 1); break;
+        case 4: return 1200 * (mLevel + 1); break;
+        default: // Should never reach here
+            return 0;
+            break;
+    }
+}
+
+
 void Game::adjustFallSpeed() {
     mFallDelay = std::max(0.1f, 1.0f - (mLevel * 0.1f));
+}
+
+void Game::processMenuEvents() {
+    sf::Event event;
+    while (mWindow.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+            mWindow.close();
+        }
+        if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Up) {
+                mMenu->moveUp();
+            }
+            else if (event.key.code == sf::Keyboard::Down) {
+                mMenu->moveDown();
+            }
+            else if (event.key.code == sf::Keyboard::Enter) {
+                // Based on selection, change state
+                if (mMenu->getSelectedIndex() == 0) {
+                    mCurrentState = GameState::PLAYING;
+                }
+                else if (mMenu->getSelectedIndex() == 1) {
+                    mWindow.close();
+                }
+            }
+        }
+    }
+}
+
+void Game::renderMenu() {
+    mWindow.clear(sf::Color(30, 30, 30));
+    mMenu->render(mWindow);
+    mWindow.display();
+}
+
+void Game::processGameOverEvents() {
+    sf::Event event;
+    while (mWindow.pollEvent(event)) {
+        if (event.type == sf::Event::Closed)
+            mWindow.close();
+        if (event.type == sf::Event::KeyPressed) {
+            // For example, press Enter to return to the main menu.
+            if (event.key.code == sf::Keyboard::Enter) {
+                resetGame(); // Optionally reset game variables for a new game.
+                mCurrentState = GameState::MENU;
+            }
+        }
+    }
+}
+
+void Game::renderGameOver() {
+    mWindow.clear(sf::Color::Black);
+
+    sf::Text gameOverText;
+    gameOverText.setFont(mFont);
+    gameOverText.setString("Game Over");
+    gameOverText.setCharacterSize(64);
+    gameOverText.setFillColor(sf::Color::Red);
+    // Center the text
+    sf::FloatRect goBounds = gameOverText.getLocalBounds();
+    gameOverText.setOrigin(goBounds.left + goBounds.width / 2.0f,
+                           goBounds.top + goBounds.height / 2.0f);
+    gameOverText.setPosition(mWindow.getSize().x / 2.0f, mWindow.getSize().y / 2.0f - 50);
+
+    sf::Text promptText;
+    promptText.setFont(mFont);
+    promptText.setString("Press Enter to return to Main Menu");
+    promptText.setCharacterSize(24);
+    promptText.setFillColor(sf::Color::White);
+    sf::FloatRect ptBounds = promptText.getLocalBounds();
+    promptText.setOrigin(ptBounds.left + ptBounds.width / 2.0f,
+                         ptBounds.top + ptBounds.height / 2.0f);
+    promptText.setPosition(mWindow.getSize().x / 2.0f, mWindow.getSize().y / 2.0f + 20);
+
+    mWindow.draw(gameOverText);
+    mWindow.draw(promptText);
+    mWindow.display();
+}
+
+
+void Game::resetGame() {
+    // Reset game variables to their initial state
+    mScore = 0;
+    mLevel = 1;
+    mTotalLinesCleared = 0;
+    
+    mScoreText.setString("Score: 0");
+    mLevelText.setString("Level: 1");
+
+    mBoard.reset();
+
+    // Optionally, reset the board and tetromino state.
+    // For example, reinitialize the tetromino to start position.
+    mTetromino = Tetromino(TetrominoType::I, 32);
+    mTetromino.setPosition(3, 0);
+    
+    mFallTimer = 0;
 }

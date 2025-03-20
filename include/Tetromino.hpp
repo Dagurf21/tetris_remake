@@ -22,6 +22,8 @@ public:
     // set the position on the board in grid coords
     void setPosition(int x, int y);
 
+    TetrominoType getType() const { return mType; }
+
     // Get the current grid position
     sf::Vector2i getPosition() const;
 

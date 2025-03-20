@@ -3,8 +3,13 @@
 
 #include "../include/Board.hpp"
 #include "../include/Tetromino.hpp"
+#include "../include/GameState.hpp"
+#include "../include/Menu.hpp"
+#include <SFML/Audio/Sound.hpp>
+#include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Audio.hpp>
 
 class Game {
 public:
@@ -26,6 +31,18 @@ private:
     void processEvents();
     void update(sf::Time deltaTime);
     void render();
+    int calculateScore(int linesCleared);
+
+    GameState mCurrentState;
+    Menu* mMenu;
+    
+    void processMenuEvents();
+    void renderMenu();
+
+    void processGameOverEvents();
+    void renderGameOver();
+
+    void resetGame();
 
     sf::RenderWindow mWindow;
     Board mBoard;           // The tetris board
@@ -41,6 +58,21 @@ private:
 
     int mScore;             // Track the score
     int mLevel;
+    int mTotalLinesCleared;
+
+    sf::SoundBuffer bufferClearLine1;
+    sf::SoundBuffer bufferClearLine2;
+    sf::SoundBuffer bufferPlaceTetromino1;
+    sf::SoundBuffer bufferPlaceTetromino2;
+    sf::SoundBuffer bufferPlaceTetromino3;
+
+    sf::Sound soundClearLine1;
+    sf::Sound soundClearLine2;
+    sf::Sound soundPlaceTetromino1;
+    sf::Sound soundPlaceTetromino2;
+    sf::Sound soundPlaceTetromino3;
+
+    sf::Music backgroundMusic;
 };
 
 #endif // GAME_HPP

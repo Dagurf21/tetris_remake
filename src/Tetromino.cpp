@@ -1,4 +1,5 @@
 #include "../include/Tetromino.hpp"
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Vector2.hpp>
@@ -72,15 +73,29 @@ void Tetromino::intializeShape() {
     }
 }
 
+sf::Color getTetrominoColor(TetrominoType type) {
+    switch (type) {
+        case TetrominoType::I: return sf::Color::Cyan;
+        case TetrominoType::O: return sf::Color::Yellow;
+        case TetrominoType::T: return sf::Color(128, 0, 128); // Purple
+        case TetrominoType::S: return sf::Color::Green;
+        case TetrominoType::Z: return sf::Color::Red;
+        case TetrominoType::J: return sf::Color::Blue;
+        case TetrominoType::L: return sf::Color(255, 165, 0); // Orange
+        default:               return sf::Color::White;
+    }
+}
 
 void Tetromino::draw(sf::RenderWindow &window, int offsetX, int offsetY) {
+    sf::Color pieceColor = getTetrominoColor(mType);
+
     // Draw each filled cell of the tetromino 
     for(size_t row = 0; row < mShape.size(); ++row){
         for (size_t col = 0; col < mShape[row].size(); ++col) {
             if(mShape[row][col]) {
                 sf::RectangleShape cell(sf::Vector2f(mCellSize - 1, mCellSize - 1));
                 // Choose color based on type
-                cell.setFillColor(mType == TetrominoType::I ? sf::Color::Cyan : sf::Color::White);
+                cell.setFillColor(pieceColor);
                 cell.setPosition(
                         offsetX + (mPosition.x + col) * mCellSize, 
                         offsetY + (mPosition.y + row) * mCellSize
