@@ -2,77 +2,82 @@
 #define GAME_HPP
 
 #include "../include/Board.hpp"
-#include "../include/Tetromino.hpp"
 #include "../include/GameState.hpp"
 #include "../include/Menu.hpp"
+#include "../include/Tetromino.hpp"
+#include <SFML/Audio.hpp>
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Text.hpp>
-#include <SFML/Audio.hpp>
+#include <optional>
 
 class Game {
 public:
-    int getScore() const { return mScore; }
-    void setScore(int score) { mScore = score; }
+  int getScore() const { return mScore; }
+  void setScore(int score) { mScore = score; }
 
-    int getLevel() const { return mLevel; }
-    void setLevel(int level) { mLevel = level; }
+  int getLevel() const { return mLevel; }
+  void setLevel(int level) { mLevel = level; }
 
-    float getfallDelay() const { return mFallDelay; }
-    void setFallDelay(float delay) { mFallDelay = delay; }
+  float getfallDelay() const { return mFallDelay; }
+  void setFallDelay(float delay) { mFallDelay = delay; }
 
-    void adjustFallSpeed();
+  void adjustFallSpeed();
 
-    Game();
-    void run();
+  Game();
+  void run();
 
 private:
-    void processEvents();
-    void update(sf::Time deltaTime);
-    void render();
-    int calculateScore(int linesCleared);
+  void processEvents();
+  void update(sf::Time deltaTime);
+  void render();
+  int calculateScore(int linesCleared);
 
-    GameState mCurrentState;
-    Menu* mMenu;
-    
-    void processMenuEvents();
-    void renderMenu();
+  GameState mCurrentState;
+  Menu *mMenu;
 
-    void processGameOverEvents();
-    void renderGameOver();
+  Tetromino mNextTetromino;
+  std::optional<Tetromino> mHeldTetromino;
+  bool mHoldUsed;
 
-    void resetGame();
+  void processMenuEvents();
+  void renderMenu();
 
-    sf::RenderWindow mWindow;
-    Board mBoard;           // The tetris board
-    Tetromino mTetromino;   // Current Tetromino
+  void processGameOverEvents();
+  void renderGameOver();
 
-    float mFallTimer;
-    float mFallDelay;
+  void resetGame();
 
-    // UI Elements
-    sf::Font mFont;
-    sf::Text mScoreText;
-    sf::Text mLevelText;
+  sf::RenderWindow mWindow;
+  Board mBoard;         // The tetris board
+  Tetromino mTetromino; // Current Tetromino
 
-    int mScore;             // Track the score
-    int mLevel;
-    int mTotalLinesCleared;
+  float mFallTimer;
+  float mFallDelay;
 
-    sf::SoundBuffer bufferClearLine1;
-    sf::SoundBuffer bufferClearLine2;
-    sf::SoundBuffer bufferPlaceTetromino1;
-    sf::SoundBuffer bufferPlaceTetromino2;
-    sf::SoundBuffer bufferPlaceTetromino3;
+  // UI Elements
+  sf::Font mFont;
+  sf::Text mScoreText;
+  sf::Text mLevelText;
 
-    sf::Sound soundClearLine1;
-    sf::Sound soundClearLine2;
-    sf::Sound soundPlaceTetromino1;
-    sf::Sound soundPlaceTetromino2;
-    sf::Sound soundPlaceTetromino3;
+  int mScore; // Track the score
+  int mLevel;
+  int mTotalLinesCleared;
 
-    sf::Music backgroundMusic;
+  sf::SoundBuffer bufferClearLine1;
+  sf::SoundBuffer bufferClearLine2;
+  sf::SoundBuffer bufferPlaceTetromino1;
+  sf::SoundBuffer bufferPlaceTetromino2;
+  sf::SoundBuffer bufferPlaceTetromino3;
+
+  sf::Sound soundClearLine1;
+  sf::Sound soundClearLine2;
+  sf::Sound soundPlaceTetromino1;
+  sf::Sound soundPlaceTetromino2;
+  sf::Sound soundPlaceTetromino3;
+
+  sf::Music backgroundMusic;
 };
 
 #endif // GAME_HPP
