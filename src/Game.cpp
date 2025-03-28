@@ -271,10 +271,8 @@ void Game::update(sf::Time deltaTime) {
       // Check for GameOver: if the new piece is invalid right away
       if (!mBoard.isValidPosition(mTetromino, 0, 0)) {
 
-        // In Game::update() or in the event branch that spawns a new tetromino:
         if (!mBoard.isValidPosition(mTetromino, 0, 0)) {
           mCurrentState = GameState::GAMEOVER;
-          // Optionally: you might want to stop further updates or lock input.
         }
       }
     }
@@ -312,17 +310,15 @@ void Game::render() {
   // Draw current tetromino
   mTetromino.draw(mWindow, offsetX, offsetY);
 
-  // --- UI: Score and Level ---
+  // UI Score and level
   mWindow.draw(mScoreText);
   mWindow.draw(mLevelText);
 
-  // ------------------------------------------------------
-  // Next box on the right (below Score/Level)
-  // ------------------------------------------------------
+  // Next piece preview
   int nextBoxWidth = 150;
   int nextBoxHeight = 150;
   int nextBoxX = offsetX + 340;
-  int nextBoxY = offsetY + 120; // below the score/level
+  int nextBoxY = offsetY + 120;
 
   sf::RectangleShape nextBox(sf::Vector2f(nextBoxWidth, nextBoxHeight));
   nextBox.setFillColor(sf::Color(50, 50, 50));
@@ -346,12 +342,9 @@ void Game::render() {
     mNextTetromino.draw(mWindow, offsetCenterX, offsetCenterY);
   }
 
-  // ------------------------------------------------------
-  // Hold box on the left, moved further down
-  // ------------------------------------------------------
+  // Hold box on the left
   int holdBoxWidth = 150;
   int holdBoxHeight = 150;
-  // Move it "a bit more down": e.g. 300 pixels below offsetY
   int holdBoxX = offsetX - (holdBoxWidth + 20);
   int holdBoxY = offsetY + 300;
 
@@ -372,8 +365,6 @@ void Game::render() {
 
   // Draw the held tetromino if it exists
   if (mHeldTetromino.has_value()) {
-    // Temporarily reset its position to (0,0) so it doesn't get drawn
-    // off-screen
     sf::Vector2i oldPos = mHeldTetromino->getPosition();
     mHeldTetromino->setPosition(0, 0);
 
@@ -381,7 +372,6 @@ void Game::render() {
     int offsetCenterY = holdBoxY + (holdBoxHeight - 128) / 2;
     mHeldTetromino->draw(mWindow, offsetCenterX, offsetCenterY);
 
-    // Restore the original position after drawing
     mHeldTetromino->setPosition(oldPos.x, oldPos.y);
   }
 
@@ -447,9 +437,8 @@ void Game::processGameOverEvents() {
     if (event.type == sf::Event::Closed)
       mWindow.close();
     if (event.type == sf::Event::KeyPressed) {
-      // For example, press Enter to return to the main menu.
       if (event.key.code == sf::Keyboard::Enter) {
-        resetGame(); // Optionally reset game variables for a new game.
+        resetGame();
         mCurrentState = GameState::MENU;
       }
     }
@@ -498,8 +487,6 @@ void Game::resetGame() {
 
   mBoard.reset();
 
-  // Optionally, reset the board and tetromino state.
-  // For example, reinitialize the tetromino to start position.
   mTetromino = Tetromino(TetrominoType::I, 32);
   mTetromino.setPosition(3, 0);
 
