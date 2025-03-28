@@ -2,8 +2,8 @@
 
 1. Clone the Repository
 
-> git clone <https://github.com/yourusername/tetris_remake.git>
-> cd tetris_remake
+``git clone <https://github.com/yourusername/tetris_remake.git>``
+``cd tetris_remake``
 
 2. Generate Build File
 
