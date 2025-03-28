@@ -2,21 +2,21 @@
 
 1. Clone the Repository
 
-``git clone <https://github.com/yourusername/tetris_remake.git>``
+``git clone <https://github.com/yourusername/tetris_remake.git>``  <br />
 ``cd tetris_remake``
 
 2. Generate Build File
 
-> cd build
-> cmake ..
+``cd build``  <br />
+``cmake ..``
 
 3. Compile the Project
 
-> make
+``make``
 
 This will create the executable (e.g., tetris_remake) inside the build folder.
 
 4. Run the Application.
 
-> cd build
-> ./tetris_remake
+``cd build``  <br />
+``./tetris_remake``
