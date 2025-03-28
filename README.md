@@ -1,29 +1,22 @@
-Building with CMake
+# Building with CMake
 
-    Clone the Repository
+1. Clone the Repository
 
-git clone <https://github.com/yourusername/tetris_remake.git>
-cd tetris_remake
+> git clone <https://github.com/yourusername/tetris_remake.git>
+> cd tetris_remake
 
-Generate Build Files
-Create a build directory and run CMake:
+2. Generate Build File
 
-mkdir build
-cd build
-cmake ..
+> cd build
+> cmake ..
 
-Compile the Project
-Build the project with:
+3. Compile the Project
 
-make
+> make
 
 This will create the executable (e.g., tetris_remake) inside the build folder.
 
-Run the Application
-From the build directory:
+4. Run the Application.
 
-    ./tetris_remake
-
-    Assets Handling
-    The CMake configuration includes a command that automatically copies the assets folder to the build directory after compilation, so the executable can find its resources.
-
+> cd build
+> ./tetris_remake

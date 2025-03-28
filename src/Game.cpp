@@ -322,7 +322,7 @@ void Game::render() {
   int nextBoxWidth = 150;
   int nextBoxHeight = 150;
   int nextBoxX = offsetX + 340;
-  int nextBoxY = offsetY + 90; // below the score/level
+  int nextBoxY = offsetY + 120; // below the score/level
 
   sf::RectangleShape nextBox(sf::Vector2f(nextBoxWidth, nextBoxHeight));
   nextBox.setFillColor(sf::Color(50, 50, 50));
